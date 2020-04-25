@@ -13,15 +13,14 @@ random.seed(1)
 
 
 class Map:
+    AIR = 0
+    WALL = 1
+    FLOOR = 2
+    SPIKE = 3
 
     def __init__(self, view: arcade.View, shape: Tuple[int, int]) -> None:
         self.view = view
         self.shape = shape
-
-        self.AIR = 0
-        self.WALL = 1
-        self.FLOOR = 2
-        self.SPIKE = 3
 
         self.GENERATIONS = 6
         self.FILL_PROBABILITY = 0.2
@@ -126,15 +125,21 @@ class Map:
 
         return sprites, collision_list, spikes
 
-    def setup(self) -> None:
+    @classmethod
+    def ensure_generate(cls, shape: Tuple[int, int]) -> np.array:
         floor_count = 0
         map_ = None
 
-        while floor_count < (self.shape[0] * self.shape[1]) / 2.5:
-            map_ = self.generate()
+        while floor_count < (shape[0] * shape[1]) / 2.5:
+            map_ = cls.generate()
             flat_map = map_.flatten()
-            floor_count = len(np.where((flat_map == self.FLOOR) | (flat_map == self.SPIKE))[0])
+            floor_count = len(np.where((flat_map == cls.FLOOR) | (flat_map == cls.SPIKE))[0])
 
+        return map_
+
+    def setup(self, map_: Optional[np.array] = None) -> None:
+        if not map_:
+            map_ = self.ensure_generate(self.shape)
         self.sprites, self.view.collision_list, self.view.game_manager.spikes = self.spritify(map_)
 
     def draw(self) -> None:

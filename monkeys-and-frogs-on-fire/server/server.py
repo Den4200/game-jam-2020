@@ -2,6 +2,7 @@ from pathlib import Path
 
 from frost import FrostServer
 
+from server.game import Multiplayer
 from server.scores import Scores
 
 
@@ -13,7 +14,8 @@ class Server(FrostServer):
             from server.utils import init_db
             init_db()
 
-        # Load up our cog
+        # Load up our cogs
         Scores()
+        Multiplayer()
 
         super().__init__(file)
