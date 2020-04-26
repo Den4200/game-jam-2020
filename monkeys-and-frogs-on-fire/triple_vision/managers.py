@@ -358,9 +358,99 @@ class LevelManager:
     BIG_SHOOTER_RADIUS = Tile.SCALED * 12
 
     @classmethod
-    def create_level(cls, game_manager: GameManager, player, level: int):
+    def create_level_stats(cls, level):
+        return {
+            'enemies': [
+                {
+                    'type': ('ChasingEnemy', 'goblin'),
+                    'hp': Enemies.goblin.value,
+                    'detection_radius': cls.NORMAL_CHASING_DETECTION_RADIUS,
+                    'moving_speed': cls.VERY_FAST_SPEED,
+                    'amount': level * 3 - (level - 1) * 1
+                },
+                {
+                    'type': ('ChasingEnemy', 'chort'),
+                    'hp': Enemies.chort.value,
+                    'detection_radius': cls.NORMAL_CHASING_DETECTION_RADIUS,
+                    'moving_speed': cls.VERY_FAST_SPEED,
+                    'amount': level * 3 - (level - 1) * 1
+                },
+                {
+                    'type': ('ChasingEnemy', 'tiny_zombie'),
+                    'hp': Enemies.tiny_zombie.value,
+                    'detection_radius': cls.NORMAL_CHASING_DETECTION_RADIUS,
+                    'moving_speed': cls.VERY_FAST_SPEED,
+                    'amount': level * 3 - (level - 1) * 1
+                },
+                {
+                    'type': ('ChasingEnemy', 'ice_zombie'),
+                    'hp': Enemies.ice_zombie.value,
+                    'detection_radius': cls.BIG_CHASING_DETECTION_RADIUS,
+                    'moving_speed': cls.FAST_SPEED,
+                    'amount': level * 2
+                },
+                {
+                    'type': ('ChasingEnemy', 'big_demon'),
+                    'hp': Enemies.big_demon.value,
+                    'detection_radius': cls.BIG_CHASING_DETECTION_RADIUS,
+                    'moving_speed': cls.NORMAL_SPEED,
+                    'amount': level * 3
+                },
+                {
+                    'type': ('StationaryEnemy', 'imp'),
+                    'hp': Enemies.imp.value,
+                    'detection_radius': cls.NORMAL_SHOOTER_RADIUS,
+                    'shoot_interval': cls.FAST_SHOOT_INTERVAL,
+                    'dmg': cls.LOW_PROJECTILE_DMG,
+                    'amount': level * 2
+                },
+                {
+                    'type': ('StationaryEnemy', 'necromancer'),
+                    'hp': Enemies.necromancer.value,
+                    'detection_radius': cls.BIG_SHOOTER_RADIUS,
+                    'shoot_interval': cls.SLOW_SHOOT_INTERVAL,
+                    'dmg': cls.HIGH_PROJECTILE_DMG,
+                    'amount': level - 2
+                },
+                {
+                    'type': ('ChasingEnemy', 'muddy'),
+                    'hp': Enemies.muddy.value,
+                    'detection_radius': cls.HUGE_CHASING_DETECTION_RADIUS,
+                    'moving_speed': cls.LOW_SPEED,
+                    'amount': level - 1
+                }
+            ],
+            'potions': [
+                {
+                    'heal': 100,
+                    'name': 'flask_yellow'
+                },
+                {
+                    'heal': 200,
+                    'name': 'flask_big_yellow'
+                },
+                {
+                    'resistance': 0.1,
+                    'duration': 3,
+                    'name': 'flask_green'
+                },
+                {
+                    'strength': 0.1,
+                    'duration': 3,
+                    'name': 'flask_big_red'
+                },
+                {
+                    'speed': 0.1,
+                    'duration': 3.0,
+                    'name': 'flask_big_blue'
+                }
+            ]
+        }
+
+    @classmethod
+    def create_level(cls, game_manager, player, level: int):
         """Deals with how many enemies and what types spawn"""
-        
+
         # Goblins have low hp but are fast and big in numbers.
         # Very small dmg
         # level1 3
@@ -528,5 +618,3 @@ class LevelManager:
                 duration=3.0,
                 filename="assets/dungeon/frames/flask_big_blue.png"
             )
-
-

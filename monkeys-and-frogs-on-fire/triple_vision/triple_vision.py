@@ -5,9 +5,10 @@ import arcade
 
 from triple_vision import Settings as s, SoundSettings as ss
 from triple_vision.camera import Camera
-from triple_vision.entities import Player
+from triple_vision.entities import ChasingEnemy, Enemies, Player, StationaryEnemy
 from triple_vision.managers import CardManager, GameManager, CursorManager, LevelManager
 from triple_vision.map import Map
+from triple_vision.networking import client, GameState, get_status
 from triple_vision.sound import SoundManager, SoundtrackManager
 
 
@@ -38,10 +39,51 @@ class TripleVision(arcade.View):
         self.cursor_manager: CursorManager = None
         self.sound_manager: SoundtrackManager = None
 
+        self.ENEMY_TYPES = {
+            'ChasingEnemy': ChasingEnemy,
+            'StationaryEnemy': StationaryEnemy
+        }
+
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_show(self) -> None:
         self.crete_level()
+
+    def load_level(self):
+        if GameState.is_online:
+            client.join_game()
+            client.start_game()
+            get_status('start_game')
+
+            self.player.center_x = GameState.player.pos[0]
+            self.player.center_y = GameState.player.pos[1]
+            self.player.hp = GameState.player.hp
+
+            for enemy in GameState.enemies:
+                if enemy.type[0] == 'StationaryEnemy':
+                    e = self.ENEMY_TYPES[enemy.type[0]](
+                        Enemies(enemy.hp),
+                        self.player,
+                        enemy.detection_radius,
+                        ctx=self.game_manager,
+                        shoot_interval=enemy.shoot_interval,
+                        dmg=enemy.dmg,
+                        pos=enemy.pos
+                    )
+
+                elif enemy.type[0] == 'ChasingEnemy':
+                    e = self.ENEMY_TYPES[enemy.type[0]](
+                        Enemies(enemy.hp),
+                        self.player,
+                        enemy.detection_radius,
+                        ctx=self.game_manager,
+                        moving_speed=enemy.moving_speed,
+                        pos=enemy.pos
+                    )
+                e.setup()
+                self.game_manager.enemies.append(e)
+
+            self.map.sprites, self.collision_list, self.game_manager.spikes = self.map.spritify(GameState.map)
 
     def crete_level(self, *, seed=None):
         if seed is None:
@@ -69,7 +111,10 @@ class TripleVision(arcade.View):
         self.charge = 0.0
         self.charging = False
 
-        LevelManager.create_level(self.game_manager, self.player, self.level)
+        if GameState.is_online:
+            self.load_level()
+        else:
+            LevelManager.create_level(self.game_manager, self.player, self.level)
 
     def on_key_press(self, key, modifiers) -> None:
         if key == arcade.key.ESCAPE:
