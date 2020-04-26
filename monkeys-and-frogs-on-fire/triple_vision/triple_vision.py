@@ -271,3 +271,13 @@ class TripleVision(arcade.View):
         SoundManager.update(self.slow_down or self.time_slow_ability)
         self.cursor_manager.update()
         self.player.update_health_bars(delta_time)
+
+        for player in self.players:
+            if player.id == self.player.id:
+                continue
+
+            for p in GameState.players:
+                if player.id == p.id:
+                    player.target = p.target_pos
+                    player.curr_color = p.curr_color
+                    player.is_alive = p.is_alive

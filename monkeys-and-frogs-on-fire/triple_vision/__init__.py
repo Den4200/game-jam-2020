@@ -8,6 +8,7 @@ class Settings:
     MAP_SIZE = (50, 50)
     ON_CARD_HOVER_SLOWDOWN_MULTIPLIER = 50
     PLAYER_CENTER_Y_COMPENSATION = 6 * SCALING
+    SERVER_TICK = 64
 
 
 class Tile:

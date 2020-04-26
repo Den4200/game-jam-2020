@@ -6,12 +6,13 @@ import arcade
 
 from triple_vision import Settings as s
 from triple_vision import Tile
+from triple_vision.entities.abilities import Abilities
 from triple_vision.entities.entities import LivingEntity
 from triple_vision.entities.sprites import ManaBar, MovingSprite
 from triple_vision.entities.weapons import ChargedLaserProjectile
-from triple_vision.utils import pixels_to_tile, tile_to_pixels
+from triple_vision.networking import client, GameState
 from triple_vision.sound import SoundManager
-from triple_vision.entities.abilities import Abilities
+from triple_vision.utils import pixels_to_tile, tile_to_pixels
 
 
 class States(Enum):
@@ -84,6 +85,8 @@ class Player(LivingEntity, MovingSprite):
         self.regeneration_hp_value = self.DEFAULT_HP_REGENERATION_PER_S
         self._regeneration_tick = 0.0
         self._regeneration_interval = 1  # in seconds
+
+        self._server_update_delta = 0
 
     @property
     def curr_color(self):
@@ -224,6 +227,8 @@ class Player(LivingEntity, MovingSprite):
         super().kill()
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
+        self._server_update_delta += delta_time
+
         change_x = 0
         change_y = 0
 
@@ -263,6 +268,13 @@ class Player(LivingEntity, MovingSprite):
             self._ability_duration_left = 0
             self.selected_ability.deactivate(self.view)
             self.view.card_manager.card_manager_enabled = True
+
+        if GameState.is_online:
+            if self._server_update_delta >= 1 / s.SERVER_TICK:
+                client.send_target(self.target)
+                client.send_color(self.curr_color)
+
+                self._server_update_delta = 0
 
         super().on_update(delta_time)
 

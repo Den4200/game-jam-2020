@@ -14,12 +14,14 @@ class Player:
         pos: List[float] = [0, 0],
         curr_color: str = 'red',
         hp: float = 1000,
+        is_alive: bool = True,
         conn: Optional[socket.socket] = None,
         target_pos: Optional[List[float]] = None
     ) -> None:
         self.id = id
         self.username = username
         self.hp = hp
+        self.is_alive = is_alive
         self.pos = pos
         self.target_pos = target_pos
         self.curr_color = curr_color
@@ -30,6 +32,7 @@ class Player:
         return {
             'id': self.id,
             'username': self.username,
+            'is_alive': self.is_alive,
             'hp': self.hp,
             'target_pos': self.target_pos,
             'pos': self.pos,

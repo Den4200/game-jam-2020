@@ -3,6 +3,5 @@ from triple_vision.networking.objects import GameState
 from triple_vision.networking.utils import get_status
 
 client = Client()
-client.connect()
 
 __all__ = ('client', 'GameState', 'get_status')
