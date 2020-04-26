@@ -14,11 +14,11 @@ class GameManager:
     def __init__(self, view) -> None:
         self.view = view
 
-        self.enemies = arcade.SpriteList(use_spatial_hash=True)
-        self.player_projectiles = arcade.SpriteList(use_spatial_hash=True)
-        self.player_melee_attacks = arcade.SpriteList(use_spatial_hash=True)
+        self.enemies = arcade.SpriteList()
+        self.player_projectiles = arcade.SpriteList()
+        self.player_melee_attacks = arcade.SpriteList()
         self.effects = arcade.SpriteList()
-        self.enemy_projectiles = arcade.SpriteList(use_spatial_hash=True)
+        self.enemy_projectiles = arcade.SpriteList()
         self.damage_indicators = arcade.SpriteList()
 
         self.spikes: Optional[arcade.SpriteList] = None
