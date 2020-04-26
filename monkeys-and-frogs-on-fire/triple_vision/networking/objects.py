@@ -35,6 +35,7 @@ class Enemy:
         shoot_interval: float = 0,
         dmg: float = 0,
         hp: float = 0,
+        melee: float = 0,
         **kwargs: Any
     ) -> None:
         self.pos = pos
@@ -44,6 +45,7 @@ class Enemy:
         self.moving_speed = moving_speed
         self.detection_radius = detection_radius
         self.shoot_interval = shoot_interval
+        self.melee = melee
 
     def serialize(self) -> Dict[str, Any]:
         return {
@@ -53,7 +55,8 @@ class Enemy:
             'hp': self.hp,
             'moving_speed': self.moving_speed,
             'detection_radius': self.detection_radius,
-            'shoot_interval': self.shoot_interval
+            'shoot_interval': self.shoot_interval,
+            'melee': self.melee
         }
 
 

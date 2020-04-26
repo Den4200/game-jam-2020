@@ -366,35 +366,40 @@ class LevelManager:
                     'hp': Enemies.goblin.value,
                     'detection_radius': cls.NORMAL_CHASING_DETECTION_RADIUS,
                     'moving_speed': cls.VERY_FAST_SPEED,
-                    'amount': level * 3 - (level - 1) * 1
+                    'amount': level * 3 - (level - 1) * 1,
+                    'melee': cls.LOW_MELEE_DMG
                 },
                 {
                     'type': ('ChasingEnemy', 'chort'),
                     'hp': Enemies.chort.value,
                     'detection_radius': cls.NORMAL_CHASING_DETECTION_RADIUS,
                     'moving_speed': cls.VERY_FAST_SPEED,
-                    'amount': level * 3 - (level - 1) * 1
+                    'amount': level * 3 - (level - 1) * 1,
+                    'melee': cls.LOW_MELEE_DMG
                 },
                 {
                     'type': ('ChasingEnemy', 'tiny_zombie'),
                     'hp': Enemies.tiny_zombie.value,
                     'detection_radius': cls.NORMAL_CHASING_DETECTION_RADIUS,
                     'moving_speed': cls.VERY_FAST_SPEED,
-                    'amount': level * 3 - (level - 1) * 1
+                    'amount': level * 3 - (level - 1) * 1,
+                    'melee': cls.LOW_MELEE_DMG
                 },
                 {
                     'type': ('ChasingEnemy', 'ice_zombie'),
                     'hp': Enemies.ice_zombie.value,
                     'detection_radius': cls.BIG_CHASING_DETECTION_RADIUS,
                     'moving_speed': cls.FAST_SPEED,
-                    'amount': level * 2
+                    'amount': level * 2,
+                    'melee': cls.NORMAL_MELEE_DMG
                 },
                 {
                     'type': ('ChasingEnemy', 'big_demon'),
                     'hp': Enemies.big_demon.value,
                     'detection_radius': cls.BIG_CHASING_DETECTION_RADIUS,
                     'moving_speed': cls.NORMAL_SPEED,
-                    'amount': level * 3
+                    'amount': level * 3,
+                    'melee': cls.HIGH_MELEE_DMG
                 },
                 {
                     'type': ('StationaryEnemy', 'imp'),
@@ -417,7 +422,8 @@ class LevelManager:
                     'hp': Enemies.muddy.value,
                     'detection_radius': cls.HUGE_CHASING_DETECTION_RADIUS,
                     'moving_speed': cls.LOW_SPEED,
-                    'amount': level - 1
+                    'amount': level - 1,
+                    'melee': cls.NORMAL_MELEE_DMG
                 }
             ],
             'potions': [

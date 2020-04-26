@@ -76,7 +76,7 @@ class Multiplayer(Cog, route='multiplayer'):
 
         level_stats = LevelManager.create_level_stats(1)
 
-        for level in level_stats:
+        for level in level_stats['enemies']:
             for _ in range(int(level['amount'])):
                 GameState.enemies.append(
                     Enemy(

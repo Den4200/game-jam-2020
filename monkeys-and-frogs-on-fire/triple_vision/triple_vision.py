@@ -5,7 +5,7 @@ import arcade
 
 from triple_vision import Settings as s, SoundSettings as ss
 from triple_vision.camera import Camera
-from triple_vision.entities import ChasingEnemy, Enemies, Player, StationaryEnemy
+from triple_vision.entities import ChasingEnemy, Enemies, Melee, Player, StationaryEnemy
 from triple_vision.managers import CardManager, GameManager, CursorManager, LevelManager
 from triple_vision.map import Map
 from triple_vision.networking import client, GameState, get_status
@@ -63,17 +63,19 @@ class TripleVision(arcade.View):
                 if enemy.type[0] == 'StationaryEnemy':
                     e = self.ENEMY_TYPES[enemy.type[0]](
                         Enemies(enemy.hp),
+                        Melee(enemy.melee),
                         self.player,
                         enemy.detection_radius,
                         ctx=self.game_manager,
                         shoot_interval=enemy.shoot_interval,
                         dmg=enemy.dmg,
-                        pos=enemy.pos
+                        pos=enemy.pos,
                     )
 
                 elif enemy.type[0] == 'ChasingEnemy':
                     e = self.ENEMY_TYPES[enemy.type[0]](
                         Enemies(enemy.hp),
+                        Melee(enemy.melee),
                         self.player,
                         enemy.detection_radius,
                         ctx=self.game_manager,
