@@ -115,7 +115,6 @@ class Multiplayer(Cog, route='multiplayer'):
         **kwargs: Any
     ) -> None:
         GameState.map = Map.ensure_generate(s.MAP_SIZE)
-        print(GameState.map)
 
         collision_list = arcade.SpriteList(use_spatial_hash=True, is_static=True)
         other_list = arcade.SpriteList(use_spatial_hash=True, is_static=True)
@@ -155,7 +154,6 @@ class Multiplayer(Cog, route='multiplayer'):
 
         for enemy in Enemies:
             for _ in range(5):
-                # print(_)
                 GameState.enemies.append(
                     Enemy(
                         find_free_tile(collision_list, other_list),
@@ -182,7 +180,6 @@ class Multiplayer(Cog, route='multiplayer'):
 def find_free_tile(collision_list, other_list):
     while True:
         center = tile_to_pixels(random.randrange(0, s.MAP_SIZE[0]), random.randrange(0, s.MAP_SIZE[1]))
-        # print(center)
 
         if (
             len(arcade.get_sprites_at_point(center, collision_list)) == 0 and
