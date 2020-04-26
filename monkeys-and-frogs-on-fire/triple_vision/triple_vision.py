@@ -109,8 +109,6 @@ class TripleVision(arcade.View):
                         pos=enemy.pos
                     )
 
-                print('yes')
-
                 enemy_class.setup()
                 self.game_manager.enemies.append(enemy_class)
 
