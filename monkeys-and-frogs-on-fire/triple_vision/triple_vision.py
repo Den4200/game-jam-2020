@@ -1,5 +1,7 @@
 import arcade
 
+from frost.client.auth import get_id
+
 from triple_vision import Settings as s
 from triple_vision import Tile
 from triple_vision.camera import Camera
@@ -12,10 +14,11 @@ from triple_vision.entities import (
 from triple_vision.managers import CardManager, GameManager, CursorManager
 from triple_vision.map import Map
 from triple_vision.sound import SoundManager
+from triple_vision.networking import client, GameState, get_status
 
 
 class TripleVision(arcade.View):
-    def __init__(self, main_view) -> None:
+    def __init__(self, main_view, ) -> None:
         super().__init__()
 
         self.main_view = main_view
@@ -29,6 +32,8 @@ class TripleVision(arcade.View):
         self.bullet_list = None
 
         self.player = None
+        self.players = None
+
         self.charge = None
         self.charging = None
 
@@ -42,8 +47,11 @@ class TripleVision(arcade.View):
 
     def on_show(self) -> None:
         self.bullet_list = arcade.SpriteList()
+        self.players = arcade.SpriteList()
 
         self.player = Player(self, 'm')
+        self.players.append(self.player)
+
         self.camera = Camera(self, s.WINDOW_SIZE[0] / 2.5, s.WINDOW_SIZE[1] / 2.5)
 
         self.card_manager = CardManager(self)
@@ -57,40 +65,88 @@ class TripleVision(arcade.View):
         self.charge = 0.0
         self.charging = False
 
-        for _ in range(3):
-            self.game_manager.create_enemy(
-                ChasingEnemy,
-                Enemies.big_demon,
-                self.player,
-                Tile.SCALED * 10,
-                moving_speed=1
-            )
+        if GameState.is_online:
+            client.join_game()
+            client.start_game()
+            get_status('start_game')
 
-        for _ in range(5):
-            self.game_manager.create_enemy(
-                StationaryEnemy,
-                Enemies.imp,
-                self.player,
-                Tile.SCALED * 10,
-                0.75
-            )
+            for player in GameState.players:
+                if player.id == get_id():
+                    p = self.player
 
-        for _ in range(15):
-            self.game_manager.create_enemy(
-                ChasingEnemy,
-                Enemies.chort,
-                self.player,
-                Tile.SCALED * 10,
-                moving_speed=1
-            )
-        for _ in range(5):
-            self.game_manager.create_enemy(
-                ChasingEnemy,
-                Enemies.wogol,
-                self.player,
-                Tile.SCALED * 10,
-                moving_speed=1
-            )
+                else:
+                    p = Player(self, 'm')
+                    self.players.append(p)
+                    p.setup()
+
+                p.center_x = player.pos[0]
+                p.center_y = player.pos[1]
+                p.username = player.username
+                p.color = player.color
+                p.hp = player.hp
+                p.target = player.target_pos
+
+            for enemy in GameState.enemies:
+                enemy_name = Enemies(enemy.type).name
+
+                if enemy_name == 'imp':
+                    enemy_class = StationaryEnemy(
+                        self.game_manager,
+                        enemy_name,
+                        self.players,
+                        Tile.SCALED * 10,
+                        0.75
+                    )
+                else:
+                    enemy_class = ChasingEnemy(
+                        self.game_manager,
+                        enemy_name,
+                        self.players,
+                        Tile.SCALED * 10,
+                        moving_speed=1
+                    )
+
+                enemy_class.setup()
+                self.game_manager.enemies.append(enemy_class)
+
+            self.map.sprites, self.collision_list, self.game_manager.spikes = self.map.spritify(GameState.map)
+
+        else:
+
+            for _ in range(3):
+                self.game_manager.create_enemy(
+                    ChasingEnemy,
+                    Enemies.big_demon,
+                    self.players,
+                    Tile.SCALED * 10,
+                    moving_speed=1
+                )
+
+            for _ in range(5):
+                self.game_manager.create_enemy(
+                    StationaryEnemy,
+                    Enemies.imp,
+                    self.players,
+                    Tile.SCALED * 10,
+                    0.75
+                )
+
+            for _ in range(15):
+                self.game_manager.create_enemy(
+                    ChasingEnemy,
+                    Enemies.chort,
+                    self.players,
+                    Tile.SCALED * 10,
+                    moving_speed=1
+                )
+            for _ in range(5):
+                self.game_manager.create_enemy(
+                    ChasingEnemy,
+                    Enemies.wogol,
+                    self.players,
+                    Tile.SCALED * 10,
+                    moving_speed=1
+                )
 
     def on_key_press(self, key, modifiers) -> None:
         if key == arcade.key.ESCAPE:

@@ -1,9 +1,9 @@
 import random
 from typing import Any, Dict
 
+import arcade
 from frost.ext import Cog
-from frost.server import auth_required, Memory
-from frost.server.database import managed_session, User
+from frost.server import auth_required, logger, Memory, Status
 
 from server.game.objects import Enemy, GameState, Player, Projectile
 from triple_vision import Settings as s
@@ -21,12 +21,10 @@ class Multiplayer(Cog, route='multiplayer'):
         id_: str,
         **kwargs: Any
     ) -> None:
-        with managed_session() as session:
-            user = session.query(User).filter(User.id == id_).first()
-            username = user.username
-
         user = Memory.logged_in_users[id_]
-        GameState.players.append(Player(id_, username, conn=user.conn))
+        GameState.players.append(Player(id_, user.username, conn=user.conn))
+
+        logger.info(f'User {user.username} joined the game')
 
     @auth_required
     def player_target_pos(
@@ -117,63 +115,77 @@ class Multiplayer(Cog, route='multiplayer'):
         **kwargs: Any
     ) -> None:
         GameState.map = Map.ensure_generate(s.MAP_SIZE)
+        print(GameState.map)
 
-        collision_list = list()
-        other_list = list()
+        collision_list = arcade.SpriteList(use_spatial_hash=True, is_static=True)
+        other_list = arcade.SpriteList(use_spatial_hash=True, is_static=True)
 
         for i in range(s.MAP_SIZE[0]):
             for j in range(s.MAP_SIZE[1]):
                 val = GameState.map[i][j]
+                px = tile_to_pixels(i, j)
 
                 if val == Map.AIR:
                     continue
 
                 if val == Map.WALL:
-                    collision_list.append(val)
+                    collision_list.append(
+                        arcade.Sprite(
+                            filename='assets/dungeon/frames/wall_corner_front_left.png',
+                            scale=s.SCALING,
+                            center_x=px[0],
+                            center_y=px[1]
+                        )
+                    )
 
                 else:
-                    other_list.append((i, j, val))
+                    other_list.append(
+                        arcade.Sprite(
+                            filename='assets/dungeon/frames/floor_1.png',
+                            scale=s.SCALING,
+                            center_x=px[0],
+                            center_y=px[1]
+                        )
+                    )
 
         for player in GameState.players:
-            while True:
-                center = (random.randrange(0, s.MAP_SIZE[0]), random.randrange(0, s.MAP_SIZE[1]))
-
-                if (
-                    all(
-                        tile[0] != center[0] and tile[1] != center[1] and tile[2] for tile in collision_list
-                    ) and
-                    any(
-                        tile[0] == center[0] and tile[1] == center[1] and tile[2] for tile in other_list
-                    )
-                ):
-                    break
-
+            center = find_free_tile(collision_list, other_list)
             player.pos[0] = center[0]
             player.pos[1] = center[1] + s.PLAYER_CENTER_Y_COMPENSATION
 
-        for (enemy_type, enemy_hp) in Enemies:
+        for enemy in Enemies:
             for _ in range(5):
-                while True:
-                    center = tile_to_pixels(random.randrange(0, s.MAP_SIZE[0]), random.randrange(0, s.MAP_SIZE[1]))
-
-                    if (
-                        all(
-                            tile[0] != center[0] and tile[1] != center[1] and tile[2] for tile in collision_list
-                        ) and
-                        any(
-                            tile[0] == center[0] and tile[1] == center[1] and tile[2] for tile in other_list
-                        )
-                    ):
-                        break
-
-                GameState.enemies.append(Enemy(center, enemy_type, enemy_hp))
+                # print(_)
+                GameState.enemies.append(
+                    Enemy(
+                        find_free_tile(collision_list, other_list),
+                        enemy.name,
+                        enemy.value
+                    )
+                )
 
         serizalized_game_state = GameState.serialize()
 
         for player in GameState.players:
             kwargs['send'](player.conn, {
                 'headers': {
-                    'path': 'multiplayer/start_game'
+                    'path': 'multiplayer/start_game',
+                    'status': Status.SUCCESS.value
                 },
                 'game_state': serizalized_game_state
             })
+
+        logger.info(f'Players: {", ".join(player.username for player in GameState.players)}')
+        logger.info('Game started!')
+
+
+def find_free_tile(collision_list, other_list):
+    while True:
+        center = tile_to_pixels(random.randrange(0, s.MAP_SIZE[0]), random.randrange(0, s.MAP_SIZE[1]))
+        # print(center)
+
+        if (
+            len(arcade.get_sprites_at_point(center, collision_list)) == 0 and
+            len(arcade.get_sprites_at_point(center, other_list)) > 0
+        ):
+            return center

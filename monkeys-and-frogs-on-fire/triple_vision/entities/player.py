@@ -27,7 +27,7 @@ class Player(LivingEntity, MovingSprite):
     MAX_HP = 1000
     DEFAULT_HP_REGENERATION_PER_S = 1
 
-    def __init__(self, view: arcade.View, gender: str) -> None:
+    def __init__(self, view: arcade.View, gender: str, **kwargs) -> None:
         super().__init__(
             sprite_name='wizzard',
             assets_path='assets/wizard',
@@ -35,11 +35,21 @@ class Player(LivingEntity, MovingSprite):
             has_hit_frame=True,
             gender=gender,
             scale=s.SCALING,
-            hp=self.MAX_HP,
+            hp=kwargs.get('hp', self.MAX_HP),
             ctx=view.game_manager,
             moving_speed=3,
             rotate=False
         )
+
+        self.id = kwargs.get('id')
+        self.username = kwargs.get('username')
+        self.curr_color = kwargs.get('curr_color', 'red')
+
+        pos = kwargs.get('pos')
+        if pos is not None:
+            self.center_x, self.center_y = pos
+
+        self.target = kwargs.get('target_pos')
 
         self.view = view
         self.last_shot = time.time()
@@ -110,7 +120,7 @@ class Player(LivingEntity, MovingSprite):
     def reset_stats(self):
         self.curr_color = self._curr_color
 
-    def setup(self) -> None:
+    def setup(self, auto_setup=True) -> None:
         self.set_hit_box([
             (-4.0, -1.0),
             (4.0, -1.0),
@@ -121,7 +131,6 @@ class Player(LivingEntity, MovingSprite):
             (-6.0, -11.0),
             (-6.0, -3.0)
         ])
-        self.curr_color = 'red'
         self.selected_ability = Abilities.red.value
 
         self.mana_bar = ManaBar(
@@ -136,17 +145,20 @@ class Player(LivingEntity, MovingSprite):
         )
         self.health_bar = PlayerLiveManager(self.view, self.hp)
 
-        while True:
-            center = tile_to_pixels(random.randrange(0, s.MAP_SIZE[0]), random.randrange(0, s.MAP_SIZE[1]))
+        if auto_setup:
+            self.curr_color = 'red'
 
-            if (
-                    len(arcade.get_sprites_at_point(center, self.view.collision_list)) == 0 and
-                    len(arcade.get_sprites_at_point(center, self.view.map.sprites)) > 0
-            ):
-                break
+            while True:
+                center = tile_to_pixels(random.randrange(0, s.MAP_SIZE[0]), random.randrange(0, s.MAP_SIZE[1]))
 
-        self.center_x = center[0]
-        self.center_y = center[1] + s.PLAYER_CENTER_Y_COMPENSATION
+                if (
+                        len(arcade.get_sprites_at_point(center, self.view.collision_list)) == 0 and
+                        len(arcade.get_sprites_at_point(center, self.view.map.sprites)) > 0
+                ):
+                    break
+
+            self.center_x = center[0]
+            self.center_y = center[1] + s.PLAYER_CENTER_Y_COMPENSATION
 
     def process_key_press(self, key) -> None:
         if key == arcade.key.W:

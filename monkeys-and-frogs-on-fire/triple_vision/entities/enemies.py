@@ -12,7 +12,7 @@ from triple_vision.pathfinding import PathFinder
 from triple_vision.utils import is_in_radius, pixels_to_tile, tile_to_pixels
 
 
-class Enemies(enum.Enum):
+class Enemies(enum.IntEnum):
     """
     Key is base name of the image file.
     Value is default enemy health
@@ -87,13 +87,15 @@ class ChasingEnemy(BaseEnemy, MovingSprite):
     def __init__(
         self,
         enemy: Enemies,
-        target_sprite: arcade.Sprite,
+        target_sprites: arcade.SpriteList,
         detection_radius: int,
         **kwargs
     ) -> None:
         super().__init__(enemy, rotate=False, kill_value=5, **kwargs)
 
-        self.target_sprite = target_sprite
+        self.target = kwargs.get('target_pos')
+
+        self.target_sprites = target_sprites
         self.detection_radius = detection_radius
 
         self.path_finder = PathFinder()
@@ -103,38 +105,41 @@ class ChasingEnemy(BaseEnemy, MovingSprite):
 
     def on_update(self, delta_time: float = 1/60) -> None:
         if not self.being_pushed:
-            if is_in_radius(self, self.target_sprite, self.detection_radius):
+            for target_sprite in self.target_sprites:
+                if is_in_radius(self, target_sprite, self.detection_radius):
 
-                if self.path is not None and self.target is None:
+                    if self.path is not None and self.target is None:
 
-                    try:
-                        self.move_to(*tile_to_pixels(*next(self.path)))
-
-                    except StopIteration:
-                        self.path = None
-
-                else:
-                    # Once path is found it should be rarely updated.
-                    # However we don't really want multiple enemies to call find()
-                    # in the same on_update, so we add a bit of randomness to it that isn't
-                    # noticeable in the gameplay.
-                    if self._tick_time > round(random.uniform(0.0, 0.2), 2):
-                        self._tick_time = 0.0
                         try:
-                            self.path = self.path_finder.find(
-                                        pixels_to_tile(self.center_x, self.center_y),
-                                        pixels_to_tile(
-                                            self.target_sprite.center_x,
-                                            self.target_sprite.center_y
-                                        ),
-                                        self.ctx.view.collision_list,
-                                        self.ctx.view.map.sprites
-                            )
+                            self.move_to(*tile_to_pixels(*next(self.path)))
 
-                        except TypeError:
-                            pass
+                        except StopIteration:
+                            self.path = None
+
                     else:
-                        self._tick_time += delta_time
+                        # Once path is found it should be rarely updated.
+                        # However we don't really want multiple enemies to call find()
+                        # in the same on_update, so we add a bit of randomness to it that isn't
+                        # noticeable in the gameplay.
+                        if self._tick_time > round(random.uniform(0.0, 0.2), 2):
+                            self._tick_time = 0.0
+                            try:
+                                self.path = self.path_finder.find(
+                                            pixels_to_tile(self.center_x, self.center_y),
+                                            pixels_to_tile(
+                                                target_sprite.center_x,
+                                                target_sprite.center_y
+                                            ),
+                                            self.ctx.view.collision_list,
+                                            self.ctx.view.map.sprites
+                                )
+
+                            except TypeError:
+                                pass
+                        else:
+                            self._tick_time += delta_time
+
+                    break
             else:
                 self.change_x = 0
                 self.change_y = 0
@@ -150,14 +155,14 @@ class StationaryEnemy(BaseEnemy):
     def __init__(
         self,
         enemy: Enemies,
-        target_sprite: arcade.Sprite,
+        target_sprites: arcade.SpriteList,
         detection_radius: int,
         shoot_interval: float,
         **kwargs
     ) -> None:
         super().__init__(enemy, is_pushable=False, kill_value=5, **kwargs)
 
-        self.target_sprite = target_sprite
+        self.target_sprites = target_sprites
         self.detection_radius = detection_radius
         self.shoot_interval = shoot_interval
         self._passed_time = 0.0
@@ -166,24 +171,25 @@ class StationaryEnemy(BaseEnemy):
         super().on_update(delta_time)
         self._passed_time += delta_time
 
-        if not is_in_radius(self, self.target_sprite, self.detection_radius):
-            return
-
         if self._passed_time < self.shoot_interval:
             return
 
-        laser = LaserProjectile(
-            color='red',
-            center_x=self.center_x,
-            center_y=self.center_y,
-            rotate=True
-        )
-        laser.move_to(
-            self.target_sprite.center_x,
-            self.target_sprite.center_y,
-            set_target=False
-        )
-        laser.play_activate_sound()
+        for target_sprite in self.target_sprites:
+            if is_in_radius(self, target_sprite, self.detection_radius):
+                laser = LaserProjectile(
+                    color='red',
+                    center_x=self.center_x,
+                    center_y=self.center_y,
+                    rotate=True
+                )
+                laser.move_to(
+                    target_sprite.center_x,
+                    target_sprite.center_y,
+                    set_target=False
+                )
+                laser.play_activate_sound()
 
-        self.ctx.enemy_projectiles.append(laser)
-        self._passed_time = 0.0
+                self.ctx.enemy_projectiles.append(laser)
+                self._passed_time = 0.0
+
+                break
