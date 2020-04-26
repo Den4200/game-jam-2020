@@ -1,6 +1,7 @@
 import enum
 import random
 from pathlib import Path
+from typing import List, Optional
 
 import arcade
 
@@ -89,11 +90,14 @@ class ChasingEnemy(BaseEnemy, MovingSprite):
         enemy: Enemies,
         target_sprites: arcade.SpriteList,
         detection_radius: int,
+        pos: Optional[List[float]] = None,
         **kwargs
     ) -> None:
         super().__init__(enemy, rotate=False, kill_value=5, **kwargs)
 
-        self.target = kwargs.get('target_pos')
+        if pos is not None:
+            self.center_x = pos[0]
+            self.center_y = pos[1]
 
         self.target_sprites = target_sprites
         self.detection_radius = detection_radius
@@ -158,9 +162,14 @@ class StationaryEnemy(BaseEnemy):
         target_sprites: arcade.SpriteList,
         detection_radius: int,
         shoot_interval: float,
+        pos: Optional[List[float]] = None,
         **kwargs
     ) -> None:
         super().__init__(enemy, is_pushable=False, kill_value=5, **kwargs)
+
+        if pos is not None:
+            self.center_x = pos[0]
+            self.center_y = pos[1]
 
         self.target_sprites = target_sprites
         self.detection_radius = detection_radius

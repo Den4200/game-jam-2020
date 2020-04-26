@@ -82,29 +82,34 @@ class TripleVision(arcade.View):
                 p.center_x = player.pos[0]
                 p.center_y = player.pos[1]
                 p.username = player.username
-                p.color = player.color
+                p.curr_color = player.curr_color
                 p.hp = player.hp
                 p.target = player.target_pos
 
             for enemy in GameState.enemies:
-                enemy_name = Enemies(enemy.type).name
 
-                if enemy_name == 'imp':
+                if enemy.type == 'imp':
                     enemy_class = StationaryEnemy(
-                        self.game_manager,
-                        enemy_name,
+                        Enemies(enemy.hp),
                         self.players,
                         Tile.SCALED * 10,
-                        0.75
+                        0.75,
+                        ctx=self.game_manager,
+                        spawn_in_map=False,
+                        pos=enemy.pos
                     )
                 else:
                     enemy_class = ChasingEnemy(
-                        self.game_manager,
-                        enemy_name,
+                        Enemies(enemy.hp),
                         self.players,
                         Tile.SCALED * 10,
-                        moving_speed=1
+                        ctx=self.game_manager,
+                        moving_speed=1,
+                        spawn_in_map=False,
+                        pos=enemy.pos
                     )
+
+                print('yes')
 
                 enemy_class.setup()
                 self.game_manager.enemies.append(enemy_class)
