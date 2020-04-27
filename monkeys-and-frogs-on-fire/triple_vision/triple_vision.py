@@ -40,6 +40,8 @@ class TripleVision(arcade.View):
         self.soundtrack_manager = SoundtrackManager(ss.SOUNDTRACK_LIST)
         self.soundtrack_manager.setup()
 
+        self.points = 0
+
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_show(self) -> None:

@@ -33,7 +33,6 @@ class GameManager:
 
         self.spikes: Optional[arcade.SpriteList] = None
 
-        self.points = 0
         self.prev_sent = False
 
     def draw(self) -> None:
@@ -142,14 +141,14 @@ class GameManager:
         self.damage_indicators.on_update(delta_time)
 
         if not self.view.player.is_alive and not self.prev_sent:
-            client.new_score(self.points)
+            client.new_score(self.view.points)
             self.prev_sent = True
 
             arcade.set_viewport(0, s.WINDOW_SIZE[0], 0, s.WINDOW_SIZE[1])
             self.view.soundtrack_manager.stop()
             self.view.window.set_mouse_visible(True)
 
-            self.view.window.show_view(GameOverView(self.view.main_view, self.points))
+            self.view.window.show_view(GameOverView(self.view.main_view, self.view.points))
             return
 
         hit_list = arcade.check_for_collision_with_list(self.view.player, self.potions)
@@ -173,7 +172,7 @@ class GameManager:
             self.view.create_level()
 
     def enemy_killed(self, enemy) -> None:
-        self.points += enemy.kill_value
+        self.view.points += enemy.kill_value
 
 
 class CardManager:
