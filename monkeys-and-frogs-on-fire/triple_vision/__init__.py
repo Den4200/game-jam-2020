@@ -3,7 +3,7 @@ from enum import IntEnum
 
 class Settings:
     TITLE = 'Triple Vision'
-    WINDOW_SIZE = (1280, 720)
+    WINDOW_SIZE = (1920, 1080)
     SCALING = 3
     MAP_SIZE = (50, 50)
     ON_CARD_HOVER_SLOWDOWN_MULTIPLIER = 50

@@ -75,7 +75,7 @@ class TripleVision(arcade.View):
 
     def on_key_press(self, key, modifiers) -> None:
         if key == arcade.key.ESCAPE:
-            client.new_score(self.game_manager.points)
+            client.new_score(self.points)
 
             arcade.set_viewport(0, s.WINDOW_SIZE[0], 0, s.WINDOW_SIZE[1])
             self.soundtrack_manager.stop()
