@@ -62,6 +62,14 @@ class GameOverView(arcade.View):
             texture=self.continue_text
         )
 
+        arcade.draw_lrwh_rectangle_textured(
+            bottom_left_x=s.WINDOW_SIZE[0] / 2 - 449,
+            bottom_left_y=s.WINDOW_SIZE[1] / 2 - 100,
+            width=898,
+            height=400,
+            texture=self.game_over_text
+        )
+
         self.score_text.draw()
 
     def on_key_press(self, key, modifiers) -> None:
